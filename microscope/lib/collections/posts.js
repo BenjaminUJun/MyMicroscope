@@ -10,11 +10,31 @@ Posts.deny({
 		return (_.without(fieldNames, 'url', 'title').length > 0);
 	}
 });
+
+Posts.deny({
+	update: function(userId, post, fieldNames, modifier) {
+		var errors = validatePost(modifier.$set);
+		return errors.title || errors.url;
+	}		
+});
 /*Posts.allow({
 	insert: function(userId, doc) {
 		return !!userId;
 	}		
 });*/
+
+validatePost = function (post) {
+	var errors = {};
+
+	if (!post.title)
+		errors.title = "please input the title";
+	
+	
+	if (!post.url)
+		errors.url = "please input the URL";
+
+	return errors;
+} 
 
 Meteor.methods({
 	postInsert: function(postAttributes) {
@@ -30,7 +50,10 @@ Meteor.methods({
 		} else {
 			postAttributes.title += "(client)";
 		}*/
-		
+		var errors = validatePost(postAttributes);
+		if (errors.title || errors.url)
+			throw new Meteor.Error('invalid-post', "You must first input title and URL");
+
 		var postWithSameLink = Posts.findOne({url: postAttributes.url});
 		if (postWithSameLink) {
 			return {

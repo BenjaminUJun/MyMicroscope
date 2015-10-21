@@ -2,13 +2,19 @@ Router.configure({
 	layoutTemplate: 'layout',
 	loadingTemplate: 'loading',
 	notFoundTemplate: 'notFound',
-	waitOn: function() { return Meteor.subscribe('posts'); }
+	waitOn: function() { 
+		return [Meteor.subscribe('posts'), Meteor.subscribe('notifications')];
+		//return [Meteor.subscribe('posts'), Meteor.subscribe('comments')]; 
+	}
 });
 
 Router.route('/', {name: 'postsList'});
 
 Router.route('/posts/:_id', {
 	name: 'postPage',
+	waitOn: function() {
+		return Meteor.subscribe('comments', this.params._id);
+	},
 	data: function() { return Posts.findOne(this.params._id); }
 });
 

@@ -50,6 +50,9 @@ Router.route('/posts/:_id', {
 
 Router.route('/posts/:_id/edit', {
 			name: 'postEdit',
+			waitOn: function() {
+				return Meteor.subscribe('singlePost', this.params._id);
+			},
 			data: function() { return Posts.findOne(this.params._id); }
 		});
 

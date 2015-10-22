@@ -3,12 +3,38 @@ Router.configure({
 	loadingTemplate: 'loading',
 	notFoundTemplate: 'notFound',
 	waitOn: function() { 
-		return [Meteor.subscribe('posts'), Meteor.subscribe('notifications')];
+		return [Meteor.subscribe('notifications')];
+		//return [Meteor.subscribe('posts'), Meteor.subscribe('notifications')];
 		//return [Meteor.subscribe('posts'), Meteor.subscribe('comments')]; 
 	}
 });
 
-Router.route('/', {name: 'postsList'});
+//Router.route('/', {name: 'postsList'});
+
+PostsListController = RouteController.extend({
+	template: 'postsList',
+	increment: 5,
+	postsLimit: function() {
+		return parseInt(this.params.postsLimit) || this.increment;
+	},
+	findOptions: function() {
+		return {sort: {submitted: -1}, limit: this.postsLimit()};
+	},
+	waitOn: function() {
+		return Meteor.subscribe('posts', this.findOptions());
+	},
+	posts: function() {
+		return Posts.find({}, this.findOptions());
+	}, 
+	data: function() {
+		var hasMore = this.posts().count() === this.postsLimit();
+		var nextPath = this.route.path({postsLimit: this.postsLimit() + this.increment});
+		return {
+			posts: this.posts(),
+			nextPath: hasMore ? nextPath : null		
+		};
+	}
+});
 
 Router.route('/posts/:_id', {
 	name: 'postPage',
@@ -24,6 +50,10 @@ Router.route('/posts/:_id/edit', {
 		});
 
 Router.route('/submit', {name: 'postSubmit'});
+
+Router.route('/:postsLimit?', {
+	name: 'postsList'
+});
 
 var requireLogin = function() {
 	if (! Meteor.user()){

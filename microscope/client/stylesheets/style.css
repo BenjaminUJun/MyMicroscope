@@ -160,3 +160,18 @@ clear: both;
 margin-bottom: 5px;
 pointer-events: auto;
 }
+.post{
+	position:relative;
+}
+.post.animate{
+	transitional:all 300ms 0ms ease-in;
+}
+
+#main{
+	position: relative;
+}
+.page{
+	position: absolute;
+	top: 0px;
+	width: 100%;
+}
